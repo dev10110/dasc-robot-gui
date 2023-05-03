@@ -464,11 +464,15 @@ void TeleopPanel::vehicle_visual_odometry_cb(
   tf2::Quaternion q(msg->q[3], msg->q[0], msg->q[1], msg->q[2]);
   tf2::Matrix3x3 m(q);
   double roll, pitch, yaw;
-  m.getRPY(roll, pitch, yaw);
+  m.inverse().getEulerYPR(yaw, pitch, roll);
+  // TODO(dev): figure out why we need this weird conversion
+  yaw = M_PI - yaw;
+  
+  // write it to the gui
   mocap_yaw->setText(
       QString("%1").arg(float(180.0 / M_PI * yaw), 5, 'f', 1, ' '));
 
-  mocap_valid->setText("Valid");
+  mocap_valid->setText("VALID");
   mocap_valid->setStyleSheet("QLabel { color : green; }");
 }
 
