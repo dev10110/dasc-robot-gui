@@ -3,6 +3,7 @@
 
 #ifndef Q_MOC_RUN
 #include <memory>
+#endif
 
 #include "geometry_msgs/msg/twist.hpp"
 #include "px4_msgs/msg/commander_set_state.hpp"
@@ -15,7 +16,6 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp/wait_for_message.hpp"
 #include "rviz_common/panel.hpp"
-#endif
 #include <QCheckBox>
 #include <QDoubleSpinBox>
 #include <QLabel>
