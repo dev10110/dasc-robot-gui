@@ -26,8 +26,11 @@
 #include <QVBoxLayout>
 #include <QRadioButton>
 #include <QButtonGroup>
+#include <QTableWidget>
+#include <QPushButton>
 
-
+// trajectory
+#include "Lissajous.hpp"
 
 namespace dasc_robot_gui {
 
@@ -65,6 +68,15 @@ protected:
   QButtonGroup * traj_type_button_group_;
 
 
+  QPushButton *takeoff, *start, *hover, *stop;
+
+  // LissaTable
+  QDoubleSpinBox * amplitude_x, *amplitude_y, *amplitude_z, *amplitude_yaw;
+  QDoubleSpinBox * freq_x, *freq_y, *freq_z, *freq_yaw;
+  QDoubleSpinBox * phi_x, *phi_y, *phi_z, *phi_yaw;
+  QDoubleSpinBox * offset_x, *offset_y, *offset_z, *offset_yaw;
+
+
   // name of the output topic;
   QString output_topic_;
 
@@ -73,6 +85,23 @@ protected:
   std::shared_ptr<rclcpp::Node> node_;
   rclcpp::Publisher<px4_msgs::msg::TrajectorySetpoint>::SharedPtr trajectory_setpoint_pub_;
 
+
+  enum Mode {
+	  STOPPED,
+	  TAKEOFF,
+	  STARTED,
+	  HOVER
+  };
+
+  Mode mode = STOPPED;
+
+
+  px4_msgs::msg::TrajectorySetpoint msg;
+  Lissajous<double, 4> lissa;
+
+  uint64_t traj_start_time;
+
+  void update_lissa();
 
 }; // class TrajectoryPanel
 

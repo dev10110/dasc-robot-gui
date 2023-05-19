@@ -32,6 +32,7 @@ set(CMAKE_AUTOMOC ON)
 ## The generated MOC files are included automatically as headers.
 set(SRC_FILES
   src/teleop_panel.cpp
+  src/trajectory_panel.cpp
 )
 
 ## An rviz plugin is just a shared library, so here we declare the

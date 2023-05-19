@@ -6,4 +6,11 @@
       A panel widget allowing simple diff-drive style robot base control.
     </description>
   </class>
+  <class name="dasc_robot_gui/Trajectory"
+         type="dasc_robot_gui::TrajectoryPanel"
+         base_class_type="rviz_common::Panel">
+    <description>
+	    A panel to publish a lissajous trajectory for the robot
+    </description>
+  </class>
 </library>
