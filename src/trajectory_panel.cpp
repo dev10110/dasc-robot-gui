@@ -19,15 +19,16 @@ TrajectoryPanel::TrajectoryPanel(QWidget *parent) : rviz_common::Panel(parent) {
   topic_layout -> addWidget(output_topic_editor_);
 
 
-  // Radio Buttons
-  QHBoxLayout *traj_type_layout = new QHBoxLayout;
-  traj_type_button_group_ = new QButtonGroup;
-  traj_hover_button_ = new QRadioButton("Hover", this);
-  traj_lissa_button_ = new QRadioButton("Lissajous", this);
-  traj_type_button_group_->addButton(traj_hover_button_);
-  traj_type_button_group_->addButton(traj_lissa_button_);
-  traj_type_layout -> addWidget(traj_hover_button_);
-  traj_type_layout -> addWidget(traj_lissa_button_);
+  // standard trajectories
+  QHBoxLayout * standard_traj_layout = new QHBoxLayout;
+  set_hover_button_ = new QPushButton("Hover Traj", this);
+  set_circle_button_ = new QPushButton("Circle Traj", this);
+  set_figure8_button_ = new QPushButton("Figure 8 Traj", this);
+  set_lissa_button_ = new QPushButton("Lissajous Traj", this);
+
+  for (auto b : {set_hover_button_, set_circle_button_, set_figure8_button_, set_lissa_button_}) {
+    standard_traj_layout->addWidget(b);
+  }
 
 
   // lissajous 
@@ -58,6 +59,7 @@ TrajectoryPanel::TrajectoryPanel(QWidget *parent) : rviz_common::Panel(parent) {
     grid_layout -> addWidget(s, 1, index);
     index ++;
   }
+  amplitude_yaw ->setSingleStep(5.0);
 
   
   // freq 
@@ -69,7 +71,8 @@ TrajectoryPanel::TrajectoryPanel(QWidget *parent) : rviz_common::Panel(parent) {
   index =1 ;
   for (auto s : {freq_x, freq_y, freq_z, freq_yaw} ) {
     s-> setSingleStep(0.001);
-    s->setValue(1.0/30.0);
+    s->setDecimals(3);
+    s->setValue(0.03);
     s -> setRange(0.0, 1.0);
     s->setWrapping(false);
     grid_layout -> addWidget(s, 2, index);
@@ -102,6 +105,7 @@ TrajectoryPanel::TrajectoryPanel(QWidget *parent) : rviz_common::Panel(parent) {
   for (auto s : {offset_x, offset_y, offset_z, offset_yaw} ) {
     s-> setSingleStep(0.1);
     s->setValue(0.0);
+    s -> setRange(-1000.0, 1000.0);
     s->setWrapping(false);
     grid_layout -> addWidget(s, 4, index);
     index ++;
@@ -123,10 +127,9 @@ TrajectoryPanel::TrajectoryPanel(QWidget *parent) : rviz_common::Panel(parent) {
   // stack it all together
   QVBoxLayout *layout = new QVBoxLayout;
   layout -> addLayout(topic_layout);
-  layout -> addLayout(traj_type_layout);
+  layout -> addLayout(standard_traj_layout);
   layout -> addLayout(lissa_params_layout);
   layout -> addLayout(button_layout);
-
   setLayout(layout);
 
   // create the timer
@@ -134,6 +137,22 @@ TrajectoryPanel::TrajectoryPanel(QWidget *parent) : rviz_common::Panel(parent) {
   connect(output_timer, SIGNAL(timeout()), this, SLOT(timer_callback()));
 
   // connect the buttons
+ 
+  // trajectory buttons
+  connect(set_hover_button_, &QPushButton::clicked, this, [this]() {
+      set_traj_hover();
+   });
+  connect(set_circle_button_, &QPushButton::clicked, this, [this]() {
+      set_traj_circle();
+   });
+  connect(set_figure8_button_, &QPushButton::clicked, this, [this]() {
+      set_traj_figure8();
+   });
+  connect(set_lissa_button_, &QPushButton::clicked, this, [this]() {
+      set_traj_lissa();
+   });
+
+  // mode buttons
   connect(takeoff, &QPushButton::clicked, this, [this]() {
       update_lissa();
       mode = Mode::TAKEOFF;
@@ -162,6 +181,118 @@ TrajectoryPanel::TrajectoryPanel(QWidget *parent) : rviz_common::Panel(parent) {
   output_timer -> start(200); //ms
 }
 
+
+void TrajectoryPanel::set_traj_hover() {
+
+      // amplitude
+      for (auto a : {amplitude_x, amplitude_y, amplitude_z, amplitude_yaw} ) {
+        a -> setValue(0.0);
+      }
+
+      // freq
+      for (auto f:  {freq_x, freq_y, freq_z, freq_yaw}) {
+        f -> setValue(0.03);
+      }
+
+      // phase
+      for (auto f : {phi_x, phi_y, phi_z, phi_yaw}) {
+        f-> setValue(0.0);
+        }
+
+      // offset
+      for (auto o : {offset_x, offset_y, offset_z, offset_yaw} ) {
+        o->setValue(0.0);
+      }
+      offset_z -> setValue(-1.0);
+
+}
+
+void TrajectoryPanel::set_traj_circle() {
+
+
+      // amplitude
+      amplitude_x -> setValue(1.0);
+      amplitude_y -> setValue(1.0);
+      for (auto a : {amplitude_z, amplitude_yaw} ) {
+        a -> setValue(0.0);
+      }
+      amplitude_yaw -> setValue(180.0);
+
+      // freq
+      for (auto f:  {freq_x, freq_y, freq_z, freq_yaw}) {
+        f -> setValue(0.03);
+      }
+
+      // phase
+      for (auto f : {phi_x, phi_z, phi_yaw}) {
+        f-> setValue(0.0);
+        }
+      phi_y->setValue(90.0);
+
+      // offset
+      for (auto o : {offset_x, offset_y,  offset_yaw} ) {
+        o->setValue(0.0);
+      }
+      offset_z -> setValue(-1.0);
+
+}
+
+void TrajectoryPanel::set_traj_figure8() {
+      
+      // amplitude
+      amplitude_x -> setValue(1.0);
+      amplitude_y -> setValue(1.0);
+      for (auto a : {amplitude_z, amplitude_yaw} ) {
+        a -> setValue(0.0);
+      }
+
+      // freq
+      for (auto f:  {freq_x, freq_y, freq_z, freq_yaw}) {
+        f -> setValue(0.03);
+      }
+      freq_y -> setValue(0.06);
+
+      // phase
+      for (auto f : {phi_x, phi_y, phi_z, phi_yaw}) {
+        f-> setValue(0.0);
+        }
+
+      // offset
+      for (auto o : {offset_x, offset_y,  offset_yaw} ) {
+        o->setValue(0.0);
+      }
+      offset_z -> setValue(-1.0);
+
+}
+
+
+void TrajectoryPanel::set_traj_lissa() {
+      
+      // amplitude
+      amplitude_x -> setValue(1.0);
+      amplitude_y -> setValue(1.0);
+      amplitude_z -> setValue(0.2);
+      amplitude_yaw -> setValue(0.0);
+
+      // freq
+      freq_x-> setValue(0.03);
+      freq_y -> setValue(5.0/4.0 * 0.03);
+      freq_z -> setValue(4.0 / 3.0 * 0.03);
+      freq_yaw -> setValue(0.03);
+
+      // phase
+      phi_x->setValue(0.0);
+      phi_y->setValue(90.0);
+      phi_z->setValue(45.0);
+      phi_yaw->setValue(0.0);
+
+      // offset
+      for (auto o : {offset_x, offset_y,  offset_yaw} ) {
+        o->setValue(0.0);
+      }
+      offset_z -> setValue(-1.0);
+
+}
 
 void TrajectoryPanel::update_lissa() {
 
@@ -220,6 +351,7 @@ void TrajectoryPanel::setTopic(const QString &new_string) {
 
   if (trajectory_setpoint_pub_ != NULL) {
     trajectory_setpoint_pub_.reset();
+    vis_path_pub_.reset();
   }
 
   // reset
@@ -231,6 +363,8 @@ void TrajectoryPanel::setTopic(const QString &new_string) {
     trajectory_setpoint_pub_ = node_ -> create_publisher<px4_msgs::msg::TrajectorySetpoint>( 
     output_topic_.toStdString() + "/fmu/in/trajectory_setpoint", 1);
 
+    vis_path_pub_ = node_ -> create_publisher<nav_msgs::msg::Path>( 
+    output_topic_.toStdString() + "/viz/trajectory", 1);
 
     // create subscribers
     // rmw_qos_profile_t ....
@@ -242,6 +376,81 @@ void TrajectoryPanel::setTopic(const QString &new_string) {
 }
 
 
+void TrajectoryPanel::visualize_trajectory() {
+  
+  // create temp lissa
+  double amplitude[4] = {
+    amplitude_x->value(),
+    amplitude_y->value(),
+    amplitude_z->value(),
+    amplitude_yaw->value() * M_PI / 180.0f};
+  
+  double omega[4] = {
+    2*M_PI*freq_x->value(),
+    2*M_PI*freq_y->value(),
+    2*M_PI*freq_z->value(),
+    2*M_PI*freq_yaw->value()};
+
+  double phi[4] = {
+    M_PI / 180.0f * phi_x->value(),
+    M_PI / 180.0f * phi_y->value(),
+    M_PI / 180.0f * phi_z->value(),
+    M_PI / 180.0f * phi_yaw->value()};
+
+  double offset[4] = {
+    offset_x->value(),
+    offset_y->value(),
+    offset_z->value(),
+    M_PI / 180.0f * offset_yaw->value()};
+
+  Lissajous<double, 4> temp_lissa;
+
+  temp_lissa.set_params(amplitude, omega, phi, offset);
+
+
+  // start constructing the message
+  nav_msgs::msg::Path path_msg;
+  path_msg.header.frame_id = "world";
+
+
+  // evaluate the trajectory and publish it 
+  double T_max = 60.0;
+
+  size_t N = 120;
+  
+  for (size_t i=0; i<N; i++)
+  {
+
+    double t = (double(i)/double(N)) * T_max;
+
+    double res[4];
+    temp_lissa.evaluate(res, t); 
+
+    geometry_msgs::msg::PoseStamped pose;
+    pose.header.frame_id = "world";
+    pose.pose.position.x = res[1];
+    pose.pose.position.y = res[0];
+    pose.pose.position.z = -res[2];
+
+    tf2::Quaternion q;
+    q.setRPY(0,0,res[3]);
+    pose.pose.orientation.x = q.x();
+    pose.pose.orientation.y = q.y();
+    pose.pose.orientation.z = q.z();
+    pose.pose.orientation.w = q.w();
+
+    path_msg.poses.push_back(pose);
+
+
+  }
+
+  // publish
+  vis_path_pub_->publish(path_msg);
+
+
+}
+
+
 void TrajectoryPanel::timer_callback() {
 
   rclcpp::spin_some(node_);
@@ -249,6 +458,8 @@ void TrajectoryPanel::timer_callback() {
   if (!(rclcpp::ok() && trajectory_setpoint_pub_ != NULL)) {
     return;
   }
+
+  visualize_trajectory();
 
 
   if (mode == Mode::STOPPED) {

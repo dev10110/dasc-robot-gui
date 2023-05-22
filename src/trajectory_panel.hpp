@@ -9,9 +9,12 @@
 // ros
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp/wait_for_message.hpp"
+#include <tf2/LinearMath/Quaternion.h>
 
 // ros msgs
 #include "px4_msgs/msg/trajectory_setpoint.hpp"
+#include "nav_msgs/msg/path.hpp"
+#include "geometry_msgs/msg/pose.hpp"
 
 // rviz
 #include "rviz_common/panel.hpp"
@@ -68,6 +71,7 @@ protected:
   QButtonGroup * traj_type_button_group_;
 
 
+  QPushButton *set_hover_button_, * set_circle_button_, * set_figure8_button_, * set_lissa_button_;
   QPushButton *takeoff, *start, *hover, *stop;
 
   // LissaTable
@@ -84,6 +88,9 @@ protected:
   // ROS
   std::shared_ptr<rclcpp::Node> node_;
   rclcpp::Publisher<px4_msgs::msg::TrajectorySetpoint>::SharedPtr trajectory_setpoint_pub_;
+  rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr vis_path_pub_;
+
+
 
 
   enum Mode {
@@ -102,6 +109,13 @@ protected:
   uint64_t traj_start_time;
 
   void update_lissa();
+  void visualize_trajectory();
+
+
+  void set_traj_hover();
+  void set_traj_circle();
+  void set_traj_figure8();
+  void set_traj_lissa();
 
 }; // class TrajectoryPanel
 

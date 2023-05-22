@@ -16,6 +16,7 @@ endif()
 
 find_package(ament_cmake REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(nav_msgs REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(Qt5 REQUIRED COMPONENTS Widgets)
 find_package(rclcpp REQUIRED)
@@ -43,6 +44,7 @@ set(SRC_FILES
 add_library(${PROJECT_NAME} SHARED ${SRC_FILES})
 ament_target_dependencies(${PROJECT_NAME}
   "geometry_msgs"
+  "nav_msgs"
   "px4_msgs"
   "rclcpp"
   "rviz_common"
@@ -59,6 +61,7 @@ pluginlib_export_plugin_description_file(rviz_common plugin_description.xml)
 
 ament_export_dependencies(
   geometry_msgs
+  nav_msgs
   tf2_geometry_msgs
   px4_msgs
   rclcpp

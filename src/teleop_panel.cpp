@@ -360,6 +360,9 @@ void TeleopPanel::setTopic(const QString &new_topic) {
     if (parameter_res_sub_ != NULL) {
       parameter_res_sub_.reset();
     }
+    if (current_setpoint_viz_pub_ !=NULL) {
+      current_setpoint_viz_pub_.reset();
+    }
 
     reset();
 
@@ -380,6 +383,9 @@ void TeleopPanel::setTopic(const QString &new_topic) {
 
       parameter_req_pub_ = node_->create_publisher<px4_msgs::msg::ParameterReq>(
           output_topic_.toStdString() + "/fmu/in/parameter_req", 1);
+
+      current_setpoint_viz_pub_ = node_->create_publisher<geometry_msgs::msg::PoseStamped>(
+          output_topic_.toStdString() + "/viz/trajectory_setpoint", 1);
 
       // create subscribers
       rmw_qos_profile_t qos_profile = rmw_qos_profile_sensor_data;
@@ -485,6 +491,24 @@ void TeleopPanel::trajectory_setpoint_cb(
   setpoint_z_disp->setText(QString("%1").arg(msg->position[2], 5, 'f', 3, ' '));
   setpoint_yaw_disp->setText(
       QString("%1").arg(float(180.0 / M_PI) * msg->yaw, 5, 'f', 1, ' '));
+
+
+  // also publish visualization
+  geometry_msgs::msg::PoseStamped viz_msg;
+  viz_msg.header.frame_id = "world";
+  viz_msg.pose.position.x = msg->position[1];
+  viz_msg.pose.position.y = msg->position[0];
+  viz_msg.pose.position.z = -msg->position[2];
+
+  tf2::Quaternion q;
+  q.setRPY(0,0,msg->yaw);
+  viz_msg.pose.orientation.x = q.x();
+  viz_msg.pose.orientation.y = q.y();
+  viz_msg.pose.orientation.z = q.z();
+  viz_msg.pose.orientation.w = q.w();
+
+  current_setpoint_viz_pub_ -> publish(viz_msg);
+  
 }
 
 void TeleopPanel::commander_status_cb(
