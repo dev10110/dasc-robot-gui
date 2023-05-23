@@ -160,12 +160,12 @@ TeleopPanel::TeleopPanel(QWidget *parent) : rviz_common::Panel(parent) {
   button_layout->addWidget(arm_button_);
   button_layout->addWidget(offboard_button_);
   button_layout->addWidget(land_button_);
-  
+
   // create the disarm button
   QHBoxLayout *disarm_layout = new QHBoxLayout;
   disarm_button_ = new QPushButton("&Disarm", this);
   disarm_button_->setDisabled(false);
-  disarm_layout -> addWidget(disarm_button_);
+  disarm_layout->addWidget(disarm_button_);
 
   // Lay out the topic field above the control widget.
   QVBoxLayout *layout = new QVBoxLayout;
@@ -232,8 +232,6 @@ TeleopPanel::TeleopPanel(QWidget *parent) : rviz_common::Panel(parent) {
   node_ = std::make_shared<rclcpp::Node>("dasc_robot_gui_node");
 }
 
-
-
 void TeleopPanel::parameter_req(bool set) {
 
   param_get_label_->setText("[?]");
@@ -286,7 +284,7 @@ void TeleopPanel::setpoint_pub_timer_callback() {
       for (size_t i = 0; i < 4; i++) {
         msg.cmd[i] = 0;
       }
-      msg.cmd[motor_num->value() - 1] = motor_cmd -> value();
+      msg.cmd[motor_num->value() - 1] = motor_cmd->value();
     } else {
       msg.raw_mode = false;
       msg.position[0] = setpoint_x->value();
@@ -366,7 +364,7 @@ void TeleopPanel::setTopic(const QString &new_topic) {
     if (parameter_res_sub_ != NULL) {
       parameter_res_sub_.reset();
     }
-    if (current_setpoint_viz_pub_ !=NULL) {
+    if (current_setpoint_viz_pub_ != NULL) {
       current_setpoint_viz_pub_.reset();
     }
 
@@ -390,8 +388,9 @@ void TeleopPanel::setTopic(const QString &new_topic) {
       parameter_req_pub_ = node_->create_publisher<px4_msgs::msg::ParameterReq>(
           output_topic_.toStdString() + "/fmu/in/parameter_req", 1);
 
-      current_setpoint_viz_pub_ = node_->create_publisher<geometry_msgs::msg::PoseStamped>(
-          output_topic_.toStdString() + "/viz/trajectory_setpoint", 1);
+      current_setpoint_viz_pub_ =
+          node_->create_publisher<geometry_msgs::msg::PoseStamped>(
+              output_topic_.toStdString() + "/viz/trajectory_setpoint", 1);
 
       // create subscribers
       rmw_qos_profile_t qos_profile = rmw_qos_profile_sensor_data;
@@ -479,7 +478,7 @@ void TeleopPanel::vehicle_visual_odometry_cb(
   m.inverse().getEulerYPR(yaw, pitch, roll);
   // TODO(dev): figure out why we need this weird conversion
   yaw = M_PI - yaw;
-  
+
   // write it to the gui
   mocap_yaw->setText(
       QString("%1").arg(float(180.0 / M_PI * yaw), 5, 'f', 1, ' '));
@@ -498,7 +497,6 @@ void TeleopPanel::trajectory_setpoint_cb(
   setpoint_yaw_disp->setText(
       QString("%1").arg(float(180.0 / M_PI) * msg->yaw, 5, 'f', 1, ' '));
 
-
   // also publish visualization
   geometry_msgs::msg::PoseStamped viz_msg;
   viz_msg.header.frame_id = "vicon/world";
@@ -507,14 +505,13 @@ void TeleopPanel::trajectory_setpoint_cb(
   viz_msg.pose.position.z = -msg->position[2];
 
   tf2::Quaternion q;
-  q.setRPY(0,0, 0.5*M_PI - msg->yaw);
+  q.setRPY(0, 0, 0.5 * M_PI - msg->yaw);
   viz_msg.pose.orientation.x = q.x();
   viz_msg.pose.orientation.y = q.y();
   viz_msg.pose.orientation.z = q.z();
   viz_msg.pose.orientation.w = q.w();
 
-  current_setpoint_viz_pub_ -> publish(viz_msg);
-  
+  current_setpoint_viz_pub_->publish(viz_msg);
 }
 
 void TeleopPanel::commander_status_cb(

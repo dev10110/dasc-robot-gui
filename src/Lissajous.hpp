@@ -6,14 +6,12 @@
 template <typename T, int D> class Lissajous {
 
 public:
-  Lissajous() {};
+  Lissajous(){};
   Lissajous(T amplitude[D], T omega[D], T phi[D], T offset[D]);
-  
-  void set_params(T amplitude[D], T omega[D], T phi[D],
-                  T offset[D]);
+
+  void set_params(T amplitude[D], T omega[D], T phi[D], T offset[D]);
 
   void evaluate(T res[], T time_s, int derivative = 0);
-
 
 private:
   T amplitude_[D];
@@ -22,16 +20,15 @@ private:
   T offset_[D];
 };
 
-template < typename T, int D>
-Lissajous<T, D>::Lissajous(T amplitude[D], T omega[D], T phi[D],
-                        T offset[D]) {
+template <typename T, int D>
+Lissajous<T, D>::Lissajous(T amplitude[D], T omega[D], T phi[D], T offset[D]) {
 
   set_params(amplitude, omega, phi, offset);
 }
 
-template < typename T, int D>
+template <typename T, int D>
 void Lissajous<T, D>::set_params(T amplitude[D], T omega[D], T phi[D],
-                              T offset[D]) {
+                                 T offset[D]) {
 
   for (size_t i = 0; i < D; i++) {
     amplitude_[i] = amplitude[i];
@@ -41,7 +38,8 @@ void Lissajous<T, D>::set_params(T amplitude[D], T omega[D], T phi[D],
   }
 }
 
-template < typename T, int D> void Lissajous<T, D>::evaluate(T res[], T time_s, int d) {
+template <typename T, int D>
+void Lissajous<T, D>::evaluate(T res[], T time_s, int d) {
 
   if (d == 0) {
     for (size_t i = 0; i < D; i++) {

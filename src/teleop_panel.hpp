@@ -139,7 +139,8 @@ protected:
   rclcpp::Publisher<px4_msgs::msg::TrajectorySetpoint>::SharedPtr
       trajectory_setpoint_pub_;
   rclcpp::Publisher<px4_msgs::msg::ParameterReq>::SharedPtr parameter_req_pub_;
-  rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr current_setpoint_viz_pub_;
+  rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr
+      current_setpoint_viz_pub_;
 
   rclcpp::Subscription<px4_msgs::msg::VehicleLocalPosition>::SharedPtr
       vehicle_local_pos_sub_;
