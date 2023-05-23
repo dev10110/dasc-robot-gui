@@ -153,16 +153,19 @@ TeleopPanel::TeleopPanel(QWidget *parent) : rviz_common::Panel(parent) {
   arm_button_ = new QPushButton("Arm", this);
   offboard_button_ = new QPushButton("Offboard", this);
   land_button_ = new QPushButton("Land", this);
-  disarm_button_ = new QPushButton("Disarm", this);
   arm_button_->setDisabled(true);
   offboard_button_->setDisabled(true);
   land_button_->setDisabled(true);
-  disarm_button_->setDisabled(false);
   button_layout->addWidget(status_label_);
   button_layout->addWidget(arm_button_);
   button_layout->addWidget(offboard_button_);
   button_layout->addWidget(land_button_);
-  button_layout->addWidget(disarm_button_);
+  
+  // create the disarm button
+  QHBoxLayout *disarm_layout = new QHBoxLayout;
+  disarm_button_ = new QPushButton("&Disarm", this);
+  disarm_button_->setDisabled(false);
+  disarm_layout -> addWidget(disarm_button_);
 
   // Lay out the topic field above the control widget.
   QVBoxLayout *layout = new QVBoxLayout;
@@ -171,6 +174,7 @@ TeleopPanel::TeleopPanel(QWidget *parent) : rviz_common::Panel(parent) {
   layout->addLayout(param_layout);
   layout->addLayout(raw_motor_layout);
   layout->addLayout(button_layout);
+  layout->addLayout(disarm_layout);
   setLayout(layout);
 
   // Create a timer for sending the output.  Motor controllers want to
@@ -227,6 +231,8 @@ TeleopPanel::TeleopPanel(QWidget *parent) : rviz_common::Panel(parent) {
   // Create the node
   node_ = std::make_shared<rclcpp::Node>("dasc_robot_gui_node");
 }
+
+
 
 void TeleopPanel::parameter_req(bool set) {
 
@@ -495,13 +501,13 @@ void TeleopPanel::trajectory_setpoint_cb(
 
   // also publish visualization
   geometry_msgs::msg::PoseStamped viz_msg;
-  viz_msg.header.frame_id = "world";
+  viz_msg.header.frame_id = "vicon/world";
   viz_msg.pose.position.x = msg->position[1];
   viz_msg.pose.position.y = msg->position[0];
   viz_msg.pose.position.z = -msg->position[2];
 
   tf2::Quaternion q;
-  q.setRPY(0,0,msg->yaw);
+  q.setRPY(0,0, 0.5*M_PI - msg->yaw);
   viz_msg.pose.orientation.x = q.x();
   viz_msg.pose.orientation.y = q.y();
   viz_msg.pose.orientation.z = q.z();

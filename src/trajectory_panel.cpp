@@ -110,6 +110,7 @@ TrajectoryPanel::TrajectoryPanel(QWidget *parent) : rviz_common::Panel(parent) {
     grid_layout -> addWidget(s, 4, index);
     index ++;
   }
+  offset_yaw->setValue(90.0);
 
 
   // buttons
@@ -135,6 +136,9 @@ TrajectoryPanel::TrajectoryPanel(QWidget *parent) : rviz_common::Panel(parent) {
   // create the timer
   QTimer * output_timer = new QTimer(this);
   connect(output_timer, SIGNAL(timeout()), this, SLOT(timer_callback()));
+  
+  QTimer * viz_timer = new QTimer(this);
+  connect(viz_timer, SIGNAL(timeout()), this, SLOT(viz_timer_callback()));
 
   // connect the buttons
  
@@ -178,7 +182,8 @@ TrajectoryPanel::TrajectoryPanel(QWidget *parent) : rviz_common::Panel(parent) {
   node_ = std::make_shared<rclcpp::Node>("dasc_trajectory_panel_node");
   
   // start the main timer
-  output_timer -> start(200); //ms
+  output_timer -> start(50); //ms
+  viz_timer -> start(300); //ms
 }
 
 
@@ -204,6 +209,7 @@ void TrajectoryPanel::set_traj_hover() {
         o->setValue(0.0);
       }
       offset_z -> setValue(-1.0);
+      offset_yaw -> setValue(90.0);
 
 }
 
@@ -234,6 +240,7 @@ void TrajectoryPanel::set_traj_circle() {
         o->setValue(0.0);
       }
       offset_z -> setValue(-1.0);
+      offset_yaw -> setValue(90.0);
 
 }
 
@@ -262,6 +269,7 @@ void TrajectoryPanel::set_traj_figure8() {
         o->setValue(0.0);
       }
       offset_z -> setValue(-1.0);
+      offset_yaw -> setValue(90.0);
 
 }
 
@@ -291,6 +299,7 @@ void TrajectoryPanel::set_traj_lissa() {
         o->setValue(0.0);
       }
       offset_z -> setValue(-1.0);
+      offset_yaw -> setValue(90.0);
 
 }
 
@@ -410,7 +419,7 @@ void TrajectoryPanel::visualize_trajectory() {
 
   // start constructing the message
   nav_msgs::msg::Path path_msg;
-  path_msg.header.frame_id = "world";
+  path_msg.header.frame_id = "vicon/world";
 
 
   // evaluate the trajectory and publish it 
@@ -427,13 +436,13 @@ void TrajectoryPanel::visualize_trajectory() {
     temp_lissa.evaluate(res, t); 
 
     geometry_msgs::msg::PoseStamped pose;
-    pose.header.frame_id = "world";
+    pose.header.frame_id = "vicon/world";
     pose.pose.position.x = res[1];
     pose.pose.position.y = res[0];
     pose.pose.position.z = -res[2];
 
     tf2::Quaternion q;
-    q.setRPY(0,0,res[3]);
+    q.setRPY(0,0, 0.5*M_PI - res[3]);
     pose.pose.orientation.x = q.x();
     pose.pose.orientation.y = q.y();
     pose.pose.orientation.z = q.z();
@@ -451,6 +460,15 @@ void TrajectoryPanel::visualize_trajectory() {
 }
 
 
+void TrajectoryPanel::viz_timer_callback() {
+
+	if (!(rclcpp::ok() && vis_path_pub_ != NULL)) {
+		return;
+	}
+
+	visualize_trajectory();
+}
+
 void TrajectoryPanel::timer_callback() {
 
   rclcpp::spin_some(node_);
@@ -458,9 +476,6 @@ void TrajectoryPanel::timer_callback() {
   if (!(rclcpp::ok() && trajectory_setpoint_pub_ != NULL)) {
     return;
   }
-
-  visualize_trajectory();
-
 
   if (mode == Mode::STOPPED) {
     return;

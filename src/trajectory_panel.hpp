@@ -55,6 +55,7 @@ public Q_SLOTS:
 protected Q_SLOTS:
 
   void timer_callback();
+  void viz_timer_callback();
   void updateTopic();
   
 
