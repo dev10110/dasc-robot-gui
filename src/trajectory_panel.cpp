@@ -168,7 +168,7 @@ TrajectoryPanel::TrajectoryPanel(QWidget *parent) : rviz_common::Panel(parent) {
   node_ = std::make_shared<rclcpp::Node>("dasc_trajectory_panel_node");
 
   // start the main timer
-  output_timer->start(50); // ms
+  output_timer->start(25); // ms
   viz_timer->start(300);   // ms
 }
 
