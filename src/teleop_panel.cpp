@@ -177,15 +177,7 @@ TeleopPanel::TeleopPanel(QWidget *parent) : rviz_common::Panel(parent) {
   layout->addLayout(disarm_layout);
   setLayout(layout);
 
-  // Create a timer for sending the output.  Motor controllers want to
-  // be reassured frequently that they are doing the right thing, so
-  // we keep re-sending velocities even when they aren't changing.
-  //
-  // Here we take advantage of QObject's memory management behavior:
-  // since "this" is passed to the new QTimer as its parent, the
-  // QTimer is deleted by the QObject destructor when this TeleopPanel
-  // object is destroyed.  Therefore we don't need to keep a pointer
-  // to the timer.
+  // Create a timer for sending the output.  
   QTimer *output_timer = new QTimer(this);
   setpoint_pub_timer_ = new QTimer(this);
 
@@ -337,9 +329,6 @@ void TeleopPanel::setTopic(const QString &new_topic) {
     output_topic_ = new_topic;
 
     // if the pub/sub exists, reset it first
-    if (velocity_publisher_ != NULL) {
-      velocity_publisher_.reset();
-    }
     if (commander_set_state_pub_ != NULL) {
       commander_set_state_pub_.reset();
     }
@@ -374,9 +363,6 @@ void TeleopPanel::setTopic(const QString &new_topic) {
     if (output_topic_ != "") {
 
       // create publishers
-      velocity_publisher_ = node_->create_publisher<geometry_msgs::msg::Twist>(
-          output_topic_.toStdString(), 1);
-
       commander_set_state_pub_ =
           node_->create_publisher<px4_msgs::msg::CommanderSetState>(
               output_topic_.toStdString() + "/fmu/in/commander_set_state", 1);
