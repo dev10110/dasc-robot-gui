@@ -6,6 +6,7 @@
 #endif
 
 #include "geometry_msgs/msg/twist.hpp"
+#include "px4_msgs/msg/battery_status.hpp"
 #include "px4_msgs/msg/commander_set_state.hpp"
 #include "px4_msgs/msg/commander_status.hpp"
 #include "px4_msgs/msg/parameter_req.hpp"
@@ -93,6 +94,9 @@ protected Q_SLOTS:
 
   void parameter_res_cb(const px4_msgs::msg::ParameterRes::SharedPtr msg) const;
 
+  void
+  battery_status_cb(const px4_msgs::msg::BatteryStatus::SharedPtr msg) const;
+
   void reset();
 
   // Then we finish up with protected member variables.
@@ -100,6 +104,7 @@ protected Q_SLOTS:
 protected:
   // One-line text editor for entering the outgoing ROS topic name.
   QLineEdit *output_topic_editor_;
+  QLabel *battery_status_label_;
 
   // Setpoint
   QDoubleSpinBox *setpoint_x, *setpoint_y, *setpoint_z, *setpoint_yaw;
@@ -152,6 +157,8 @@ protected:
       trajectory_setpoint_sub_;
   rclcpp::Subscription<px4_msgs::msg::ParameterRes>::SharedPtr
       parameter_res_sub_;
+  rclcpp::Subscription<px4_msgs::msg::BatteryStatus>::SharedPtr
+      battery_status_sub_;
 
   uint64_t last_timestamp_commander_status_ = 0;
 };

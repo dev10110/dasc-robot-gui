@@ -147,16 +147,21 @@ TeleopPanel::TeleopPanel(QWidget *parent) : rviz_common::Panel(parent) {
   raw_mode = new QCheckBox("raw mode?", this);
   raw_motor_layout->addWidget(raw_mode);
 
+  // state labels
+  QHBoxLayout *status_layout = new QHBoxLayout;
+  status_label_ = new QLabel("status: UNKNOWN");
+  battery_status_label_ = new QLabel("Bat Status");
+  status_layout->addWidget(status_label_);
+  status_layout->addWidget(battery_status_label_);
+
   // create the arm disarm buttons
   QHBoxLayout *button_layout = new QHBoxLayout;
-  status_label_ = new QLabel("status: UNKNOWN");
   arm_button_ = new QPushButton("Arm", this);
   offboard_button_ = new QPushButton("Offboard", this);
   land_button_ = new QPushButton("Land", this);
   arm_button_->setDisabled(true);
   offboard_button_->setDisabled(true);
   land_button_->setDisabled(true);
-  button_layout->addWidget(status_label_);
   button_layout->addWidget(arm_button_);
   button_layout->addWidget(offboard_button_);
   button_layout->addWidget(land_button_);
@@ -173,6 +178,7 @@ TeleopPanel::TeleopPanel(QWidget *parent) : rviz_common::Panel(parent) {
   layout->addLayout(pos_layout);
   layout->addLayout(param_layout);
   layout->addLayout(raw_motor_layout);
+  layout->addLayout(status_layout);
   layout->addLayout(button_layout);
   layout->addLayout(disarm_layout);
   setLayout(layout);
@@ -418,6 +424,13 @@ void TeleopPanel::setTopic(const QString &new_topic) {
           node_->create_subscription<px4_msgs::msg::ParameterRes>(
               new_topic, qos,
               std::bind(&TeleopPanel::parameter_res_cb, this, _1));
+
+      new_topic = output_topic_.toStdString() + "/fmu/out/battery_status";
+      std::cout << "Subscribing to: " << new_topic << std::endl;
+      battery_status_sub_ =
+          node_->create_subscription<px4_msgs::msg::BatteryStatus>(
+              new_topic, qos,
+              std::bind(&TeleopPanel::battery_status_cb, this, _1));
     }
 
     // rviz_common::Panel defines the configChanged() signal.  Emitting it
@@ -428,6 +441,20 @@ void TeleopPanel::setTopic(const QString &new_topic) {
     // to show in the window's title bar indicating unsaved changes.
     Q_EMIT configChanged();
   }
+}
+
+void TeleopPanel::battery_status_cb(
+    const px4_msgs::msg::BatteryStatus::SharedPtr msg) const {
+
+  if (msg->connected) {
+    QString text;
+    text.sprintf("%02.2f%% (%02.1fV, %02.1fA)", 100 * msg->remaining,
+                 msg->voltage_filtered_v, msg->current_filtered_a);
+    battery_status_label_->setText(text);
+  } else {
+    battery_status_label_->setText(QString("Bat Disconnected"));
+  }
+  return;
 }
 
 void TeleopPanel::parameter_res_cb(
