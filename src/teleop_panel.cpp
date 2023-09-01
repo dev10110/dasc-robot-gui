@@ -540,6 +540,22 @@ void TeleopPanel::commander_status_cb(
   }
 }
 
+float wrapToPi(float yaw)
+{
+  return std::atan2(std::sin(yaw), std::cos(yaw));
+} 
+
+float wrapTo2Pi(float yaw)
+{
+
+  yaw = wrapToPi(yaw);
+  if (yaw < 0) {
+    return yaw + 2*M_PI;
+  }
+
+  return yaw;
+}
+
 void TeleopPanel::reset() {
 
   for (auto l :
@@ -562,7 +578,7 @@ void TeleopPanel::reset() {
 void TeleopPanel::vehicle_local_pos_cb(
     const px4_msgs::msg::VehicleLocalPosition::SharedPtr msg) const {
 
-  if (msg->xy_valid && msg->z_valid && msg->v_xy_valid && msg->v_z_valid) {
+  if (msg->xy_valid && msg->z_valid && msg->v_xy_valid && msg->v_z_valid && msg->heading_good_for_control) {
     ekf_valid->setText("VALID");
     ekf_valid->setStyleSheet("QLabel { color : green; }");
   } else {
@@ -573,8 +589,9 @@ void TeleopPanel::vehicle_local_pos_cb(
   ekf_x->setText(QString("%1").arg(msg->x, 5, 'f', 3, ' '));
   ekf_y->setText(QString("%1").arg(msg->y, 5, 'f', 3, ' '));
   ekf_z->setText(QString("%1").arg(msg->z, 5, 'f', 3, ' '));
+  float yaw = wrapTo2Pi(msg->heading) * float(180.0 / M_PI);
   ekf_yaw->setText(
-      QString("%1").arg(msg->heading * float(180.0f / M_PI), 5, 'f', 1, ' '));
+      QString("%1").arg(yaw, 5, 'f', 1, ' '));
 }
 
 void TeleopPanel::commander_set_state(uint8_t new_state) {
