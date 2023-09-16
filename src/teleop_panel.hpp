@@ -6,7 +6,7 @@
 #endif
 
 #include "geometry_msgs/msg/twist.hpp"
-#include "px4_msgs/msg/battery_status.hpp"
+#include "px4_msgs/msg/simple_battery_status.hpp"
 #include "px4_msgs/msg/commander_set_state.hpp"
 #include "px4_msgs/msg/commander_status.hpp"
 #include "px4_msgs/msg/parameter_req.hpp"
@@ -95,7 +95,7 @@ protected Q_SLOTS:
   void parameter_res_cb(const px4_msgs::msg::ParameterRes::SharedPtr msg) const;
 
   void
-  battery_status_cb(const px4_msgs::msg::BatteryStatus::SharedPtr msg) const;
+  battery_status_cb(const px4_msgs::msg::SimpleBatteryStatus::SharedPtr msg) const;
 
   void reset();
 
@@ -157,7 +157,7 @@ protected:
       trajectory_setpoint_sub_;
   rclcpp::Subscription<px4_msgs::msg::ParameterRes>::SharedPtr
       parameter_res_sub_;
-  rclcpp::Subscription<px4_msgs::msg::BatteryStatus>::SharedPtr
+  rclcpp::Subscription<px4_msgs::msg::SimpleBatteryStatus>::SharedPtr
       battery_status_sub_;
 
   uint64_t last_timestamp_commander_status_ = 0;

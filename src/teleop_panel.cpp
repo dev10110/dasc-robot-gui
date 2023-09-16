@@ -425,10 +425,10 @@ void TeleopPanel::setTopic(const QString &new_topic) {
               new_topic, qos,
               std::bind(&TeleopPanel::parameter_res_cb, this, _1));
 
-      new_topic = output_topic_.toStdString() + "/fmu/out/battery_status";
+      new_topic = output_topic_.toStdString() + "/fmu/out/simple_battery_status";
       std::cout << "Subscribing to: " << new_topic << std::endl;
       battery_status_sub_ =
-          node_->create_subscription<px4_msgs::msg::BatteryStatus>(
+          node_->create_subscription<px4_msgs::msg::SimpleBatteryStatus>(
               new_topic, qos,
               std::bind(&TeleopPanel::battery_status_cb, this, _1));
     }
@@ -444,16 +444,16 @@ void TeleopPanel::setTopic(const QString &new_topic) {
 }
 
 void TeleopPanel::battery_status_cb(
-    const px4_msgs::msg::BatteryStatus::SharedPtr msg) const {
+    const px4_msgs::msg::SimpleBatteryStatus::SharedPtr msg) const {
 
-  if (msg->connected) {
+  //if (msg->connected) {
     QString text;
     text.sprintf("%02.2f%% (%02.1fV, %02.1fA)", 100 * msg->remaining,
                  msg->voltage_filtered_v, msg->current_filtered_a);
     battery_status_label_->setText(text);
-  } else {
-    battery_status_label_->setText(QString("Bat Disconnected"));
-  }
+  //} else {
+  //  battery_status_label_->setText(QString("Bat Disconnected"));
+  //}
   return;
 }
 
