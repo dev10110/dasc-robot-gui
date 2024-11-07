@@ -26,6 +26,13 @@ TeleopPanel::TeleopPanel(QWidget *parent) : rviz_common::Panel(parent) {
   topic_layout->addWidget(new QLabel("Robot Namespace:"));
   output_topic_editor_ = new QLineEdit;
   topic_layout->addWidget(output_topic_editor_);
+  
+
+  // global frame arg
+  QHBoxLayout *global_frame_layout = new QHBoxLayout;
+  global_frame_layout->addWidget(new QLabel("Global Frame:"));
+  global_frame_editor_ = new QLineEdit;
+  global_frame_layout->addWidget(global_frame_editor_);
 
   // Next layout the grid of EKF and Target Setpoints
   QHBoxLayout *pos_layout = new QHBoxLayout;
@@ -175,6 +182,7 @@ TeleopPanel::TeleopPanel(QWidget *parent) : rviz_common::Panel(parent) {
   // Lay out the topic field above the control widget.
   QVBoxLayout *layout = new QVBoxLayout;
   layout->addLayout(topic_layout);
+  layout->addLayout(global_frame_layout);
   layout->addLayout(pos_layout);
   layout->addLayout(param_layout);
   layout->addLayout(raw_motor_layout);
@@ -190,6 +198,9 @@ TeleopPanel::TeleopPanel(QWidget *parent) : rviz_common::Panel(parent) {
   // Next we make signal/slot connections.
   connect(output_topic_editor_, SIGNAL(editingFinished()), this,
           SLOT(updateTopic()));
+  
+  connect(global_frame_editor_, SIGNAL(editingFinished()), this,
+          SLOT(updateGlobalFrame()));
 
   connect(arm_button_, &QPushButton::clicked, this, [this]() {
     this->commander_set_state(px4_msgs::msg::CommanderSetState::STATE_ARMED);
@@ -328,6 +339,8 @@ void TeleopPanel::timer_callback() {
 // away.
 void TeleopPanel::updateTopic() { setTopic(output_topic_editor_->text()); }
 
+void TeleopPanel::updateGlobalFrame() { setGlobalFrame(global_frame_editor_->text()); }
+
 // Set the topic name we are publishing to.
 void TeleopPanel::setTopic(const QString &new_topic) {
   // Only take action if the name has changed.
@@ -443,6 +456,12 @@ void TeleopPanel::setTopic(const QString &new_topic) {
   }
 }
 
+// Set the global_frame we are using
+void TeleopPanel::setGlobalFrame(const QString &global_frame) {
+	global_frame_ = global_frame.toStdString();
+	// TODO(dev): update the rviz view's global frame maybe?
+}
+
 void TeleopPanel::battery_status_cb(
     const px4_msgs::msg::SimpleBatteryStatus::SharedPtr msg) const {
 
@@ -512,7 +531,7 @@ void TeleopPanel::trajectory_setpoint_cb(
 
   // also publish visualization
   geometry_msgs::msg::PoseStamped viz_msg;
-  viz_msg.header.frame_id = "vicon/world";
+  viz_msg.header.frame_id = global_frame_;
   viz_msg.pose.position.x = msg->position[1];
   viz_msg.pose.position.y = msg->position[0];
   viz_msg.pose.position.z = -msg->position[2];
@@ -635,6 +654,7 @@ void TeleopPanel::commander_set_state(uint8_t new_state) {
 void TeleopPanel::save(rviz_common::Config config) const {
   rviz_common::Panel::save(config);
   config.mapSetValue("Topic", output_topic_);
+  config.mapSetValue("Global Frame", QString::fromStdString(global_frame_));
 }
 
 // Load all configuration data for this panel from the given Config object.
@@ -644,6 +664,11 @@ void TeleopPanel::load(const rviz_common::Config &config) {
   if (config.mapGetString("Topic", &topic)) {
     output_topic_editor_->setText(topic);
     updateTopic();
+  }
+  QString global_frame;
+  if (config.mapGetString("Global Frame", &global_frame)) {
+    global_frame_editor_->setText(global_frame);
+    updateGlobalFrame();
   }
 }
 

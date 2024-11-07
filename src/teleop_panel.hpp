@@ -68,6 +68,8 @@ public Q_SLOTS:
   // some other user.
   void setTopic(const QString &topic);
 
+  void setGlobalFrame(const QString &frame);
+
   // Here we declare some internal slots.
 
 protected Q_SLOTS:
@@ -76,6 +78,8 @@ protected Q_SLOTS:
   // updateTopic() reads the topic name from the QLineEdit and calls
   // setTopic() with the result.
   void updateTopic();
+
+  void updateGlobalFrame();
 
   void timer_callback();
   void setpoint_pub_timer_callback();
@@ -104,6 +108,11 @@ protected Q_SLOTS:
 protected:
   // One-line text editor for entering the outgoing ROS topic name.
   QLineEdit *output_topic_editor_;
+
+  // Global frame
+  QLineEdit *global_frame_editor_;
+
+  // battery status
   QLabel *battery_status_label_;
 
   // Setpoint
@@ -135,6 +144,9 @@ protected:
 
   // The current name of the output topic.
   QString output_topic_;
+
+  // name of the global frame we are using
+  std::string global_frame_ = "world";
 
   // The ROS node and publisher for the command velocity.
   std::shared_ptr<rclcpp::Node> node_;
